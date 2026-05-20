@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WINGO SIGNAL</title>
+<title>WINGO SIGNAL PANEL</title>
 
 <style>
 
@@ -29,13 +29,13 @@ margin-bottom:15px;
 
 .title{
 text-align:center;
-font-size:40px;
+font-size:38px;
 font-weight:bold;
 }
 
 .live{
 text-align:center;
-font-size:26px;
+font-size:24px;
 color:#00ff66;
 margin:15px 0;
 }
@@ -44,7 +44,7 @@ margin:15px 0;
 display:flex;
 justify-content:space-between;
 margin:12px 0;
-font-size:24px;
+font-size:22px;
 }
 
 .signal{
@@ -73,6 +73,30 @@ margin-top:10px;
 font-weight:bold;
 }
 
+.buttons{
+display:flex;
+gap:15px;
+margin-top:20px;
+}
+
+.btn{
+flex:1;
+padding:18px;
+border:none;
+border-radius:15px;
+font-size:24px;
+font-weight:bold;
+color:white;
+}
+
+.bigBtn{
+background:#16a34a;
+}
+
+.smallBtn{
+background:#dc2626;
+}
+
 .history{
 display:flex;
 flex-wrap:wrap;
@@ -81,13 +105,13 @@ margin-top:20px;
 }
 
 .item{
-width:55px;
-height:55px;
+width:50px;
+height:50px;
 border-radius:50%;
 display:flex;
 align-items:center;
 justify-content:center;
-font-size:24px;
+font-size:22px;
 font-weight:bold;
 }
 
@@ -102,17 +126,17 @@ background:#dc2626;
 .status{
 text-align:center;
 margin-top:15px;
-font-size:20px;
+font-size:18px;
 color:#94a3b8;
 }
 
 .startBtn{
 width:100%;
 padding:18px;
-font-size:26px;
+font-size:24px;
 font-weight:bold;
 border:none;
-border-radius:20px;
+border-radius:15px;
 background:#00ff66;
 color:black;
 margin-top:15px;
@@ -121,8 +145,8 @@ margin-top:15px;
 #popup{
 display:none;
 position:fixed;
-top:100px;
-left:30px;
+top:120px;
+left:20px;
 background:#1c2942;
 padding:20px;
 border-radius:20px;
@@ -134,7 +158,7 @@ box-shadow:0 0 20px rgba(0,0,0,0.5);
 
 .popupTitle{
 text-align:center;
-font-size:24px;
+font-size:22px;
 font-weight:bold;
 }
 
@@ -147,7 +171,7 @@ margin-top:10px;
 
 .popupCounter{
 text-align:center;
-font-size:30px;
+font-size:28px;
 margin-top:10px;
 font-weight:bold;
 }
@@ -168,18 +192,13 @@ font-weight:bold;
 </div>
 
 <div class="row">
-<span>Issue:</span>
-<span id="issue">...</span>
+<span>Current Signal:</span>
+<span id="predict">BIG</span>
 </div>
 
 <div class="row">
-<span>Countdown:</span>
-<span id="countdown">0</span>
-</div>
-
-<div class="row">
-<span>Latest:</span>
-<span id="latest">-</span>
+<span>Counter:</span>
+<span id="counterText">BIG 1</span>
 </div>
 
 <div id="signalBox" class="signal big">
@@ -188,33 +207,50 @@ font-weight:bold;
 NEXT SIGNAL
 </div>
 
-<div class="signalText" id="predict">
+<div class="signalText" id="mainSignal">
 BIG
 </div>
 
-<div class="counter" id="counterText">
-BIG 1
 </div>
 
-</div>
+<!-- BUTTONS -->
 
-<button class="startBtn" id="startBtn">
-START SIGNAL
+<div class="buttons">
+
+<button class="btn bigBtn"
+onclick="enterResult('BIG')">
+BIG
+</button>
+
+<button class="btn smallBtn"
+onclick="enterResult('SMALL')">
+SMALL
 </button>
 
 </div>
 
+<button class="startBtn"
+id="startBtn">
+START POPUP
+</button>
+
+</div>
+
+<!-- HISTORY -->
+
 <div class="card">
 
-<h1>History</h1>
+<h2>History</h2>
 
-<div class="history" id="history">
+<div class="history"
+id="history">
 </div>
 
 </div>
 
-<div class="status" id="status">
-CONNECTING...
+<div class="status"
+id="status">
+READY
 </div>
 
 <!-- POPUP -->
@@ -225,11 +261,13 @@ CONNECTING...
 🔥 LIVE SIGNAL
 </div>
 
-<div class="popupSignal" id="popupSignal">
+<div class="popupSignal"
+id="popupSignal">
 BIG
 </div>
 
-<div class="popupCounter" id="popupCounter">
+<div class="popupCounter"
+id="popupCounter">
 BIG 1
 </div>
 
@@ -237,56 +275,15 @@ BIG 1
 
 <script>
 
-// ===== HISTORY =====
+// ===== DATA =====
 
 let historyData = [];
 
-// ===== SIGNAL =====
+let currentSignal = 'BIG';
 
-let currentSignal = '';
-let signalCount = 0;
+let signalCount = 1;
 
-// ===== ISSUE =====
-
-let previousIssue = '';
-
-// ===== BIG SMALL =====
-
-function getSignal(){
-
-// REAL LOGIC
-
-let last3 =
-historyData.slice(0,3);
-
-let big =
-last3.filter(x => x === 'BIG').length;
-
-let small =
-last3.filter(x => x === 'SMALL').length;
-
-// BBB -> SMALL
-
-if(big >= 2){
-return 'SMALL';
-}
-
-// SSS -> BIG
-
-if(small >= 2){
-return 'BIG';
-}
-
-// ALTERNATE
-
-if(historyData[0] === 'BIG'){
-return 'SMALL';
-}
-
-return 'BIG';
-}
-
-// ===== ADD HISTORY =====
+// ===== HISTORY =====
 
 function addHistory(result){
 
@@ -326,6 +323,41 @@ history.appendChild(div);
 
 }
 
+// ===== PREDICTION =====
+
+function getNextSignal(){
+
+const last3 =
+historyData.slice(0,3);
+
+const big =
+last3.filter(x=>x==='BIG').length;
+
+const small =
+last3.filter(x=>x==='SMALL').length;
+
+// BBB -> SMALL
+
+if(big >= 2){
+return 'SMALL';
+}
+
+// SSS -> BIG
+
+if(small >= 2){
+return 'BIG';
+}
+
+// ALTERNATE
+
+if(historyData[0] === 'BIG'){
+return 'SMALL';
+}
+
+return 'BIG';
+
+}
+
 // ===== UPDATE SIGNAL =====
 
 function updateSignal(nextSignal){
@@ -345,33 +377,32 @@ signalCount = 1;
 currentSignal = nextSignal;
 
 signalCount = 1;
+
 }
 
-// MAIN SIGNAL
-
-document.getElementById('predict').innerText =
-nextSignal;
-
-// COUNTER
+// TEXT
 
 const counter =
 nextSignal + ' ' + signalCount;
 
-document.getElementById('counterText').innerText =
-counter;
+// MAIN
+
+document.getElementById('predict')
+.innerText = nextSignal;
+
+document.getElementById('mainSignal')
+.innerText = nextSignal;
+
+document.getElementById('counterText')
+.innerText = counter;
 
 // POPUP
 
-document.getElementById('popupSignal').innerText =
-nextSignal;
+document.getElementById('popupSignal')
+.innerText = nextSignal;
 
-document.getElementById('popupCounter').innerText =
-counter;
-
-// LATEST
-
-document.getElementById('latest').innerText =
-counter;
+document.getElementById('popupCounter')
+.innerText = counter;
 
 // COLOR
 
@@ -392,75 +423,35 @@ signalBox.classList.add('small');
 
 }
 
-// ===== LOAD =====
+// ===== BUTTON CLICK =====
 
-async function load(){
+function enterResult(result){
 
-try{
+// SAVE REAL RESULT
 
-const response =
-await fetch('/api/issue');
+addHistory(result);
 
-const data =
-await response.json();
-
-const issue =
-data.data.issueNumber;
-
-const countdown =
-data.data.countdown;
-
-// ISSUE
-
-document.getElementById('issue').innerText =
-issue;
-
-document.getElementById('countdown').innerText =
-countdown + 's';
-
-// NEW ROUND
-
-if(issue !== previousIssue){
-
-previousIssue = issue;
-
-// RANDOM HISTORY INPUT
-
-const latest =
-Math.random() > 0.5
-? 'BIG'
-: 'SMALL';
-
-addHistory(latest);
-
-// NEXT SIGNAL
+// GET NEXT SIGNAL
 
 const nextSignal =
-getSignal();
+getNextSignal();
+
+// UPDATE
 
 updateSignal(nextSignal);
 
-}
-
 // STATUS
 
-document.getElementById('status').innerText =
-'LIVE CONNECTED';
-
-}catch(e){
-
-console.log(e);
-
-document.getElementById('status').innerText =
-'SERVER ERROR';
+document.getElementById('status')
+.innerText =
+'LAST RESULT: ' + result;
 
 }
 
-}
+// ===== POPUP =====
 
-// ===== START BUTTON =====
-
-document.getElementById('startBtn').onclick = ()=>{
+document.getElementById('startBtn')
+.onclick = ()=>{
 
 const popup =
 document.getElementById('popup');
@@ -477,7 +468,7 @@ popup.style.display = 'none';
 
 };
 
-// ===== DRAG POPUP =====
+// ===== DRAG =====
 
 const popup =
 document.getElementById('popup');
@@ -491,10 +482,12 @@ popup.addEventListener('touchstart',(e)=>{
 isDragging = true;
 
 offsetX =
-e.touches[0].clientX - popup.offsetLeft;
+e.touches[0].clientX -
+popup.offsetLeft;
 
 offsetY =
-e.touches[0].clientY - popup.offsetTop;
+e.touches[0].clientY -
+popup.offsetTop;
 
 });
 
@@ -520,9 +513,7 @@ isDragging = false;
 
 // ===== START =====
 
-load();
-
-setInterval(load,1000);
+updateSignal('BIG');
 
 </script>
 
