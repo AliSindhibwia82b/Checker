@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wingo Signal</title>
+
+<style>
+body{
+background:#08122f;
+color:white;
+font-family:Arial;
+padding:15px;
+}
+
+.card{
+background:#1c2942;
+padding:20px;
+border-radius:20px;
+margin-bottom:15px;
+}
+
+.title{
+text-align:center;
+font-size:40px;
+font-weight:bold;
+}
+
+.live{
+text-align:center;
+color:#00ff66;
+font-size:30px;
+margin:20px 0;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+font-size:26px;
+margin:12px 0;
+}
+
+.signal{
+padding:25px;
+border-radius:20px;
+text-align:center;
+margin-top:20px;
+}
+
+.big{
+background:#16a34a;
+}
+
+.small{
+background:#dc2626;
+}
+
+.signalText{
+font-size:70px;
+font-weight:bold;
+}
+
+.history{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-top:20px;
+}
+
+.item{
+width:55px;
+height:55px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:24px;
+font-weight:bold;
+}
+
+.green{
+background:#16a34a;
+}
+
+.red{
+background:#dc2626;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+<div class="title">🔥 WINGO SIGNAL</div>
+<div class="live">● LIVE</div>
+
+<div class="row">
+<span>Issue:</span>
+<span id="issue">...</span>
+</div>
+
+<div class="row">
+<span>Countdown:</span>
+<span id="countdown">0</span>
+</div>
+
+<div class="row">
+<span>Latest:</span>
+<span id="latest">-</span>
+</div>
+
+<div id="signal" class="signal big">
+<div>NEXT SIGNAL</div>
+<div class="signalText" id="predict">BIG</div>
+</div>
+
+</div>
+
+<div class="card">
+<h1>History</h1>
+<div class="history" id="history"></div>
+</div>
+
+<script>
+
+function bs(num){
+return num >= 5 ? 'BIG' : 'SMALL';
+}
+
+function predict(arr){
+
+let big = 0;
+let small = 0;
+
+arr.slice(0,3).forEach(x=>{
+if(x==='BIG') big++;
+else small++;
+});
+
+if(big>=2) return 'SMALL';
+if(small>=2) return 'BIG';
+
+return Math.random()>0.5 ? 'BIG':'SMALL';
+}
+
+async function load(){
+
+try{
+
+const issueRes = await fetch('/api/issue');
+const issueData = await issueRes.json();
+
+const historyRes = await fetch('/api/history');
+const historyData = await historyRes.json();
+
+const list = historyData.data.list;
+
+const latest = parseInt(list[0].number);
+
+const latestBS = bs(latest);
+
+const history = [];
+
+list.forEach(x=>{
+history.push(bs(parseInt(x.number)));
+});
+
+const next = predict(history);
+
+// ISSUE
+
+document.getElementById('issue').innerText = issueData.data.issueNumber;
+
+document.getElementById('countdown').innerText = issueData.data.countdown + 's';
+
+document.getElementById('latest').innerText = latest + ' → ' + latestBS;
+
+// PREDICT
+
+document.getElementById('predict').innerText = next;
+
+const signal = document.getElementById('signal');
+
+signal.className = 'signal';
+
+if(next==='BIG'){
+signal.classList.add('big');
+}else{
+signal.classList.add('small');
+}
+
+// HISTORY
+
+const historyDiv = document.getElementById('history');
+historyDiv.innerHTML='';
+
+history.slice(0,10).forEach(x=>{
+
+const div = document.createElement('div');
+
+div.classList.add('item');
+
+if(x==='BIG'){
+div.classList.add('green');
+div.innerText='B';
+}else{
+div.classList.add('red');
+div.innerText='S';
+}
+
+historyDiv.appendChild(div);
+});
+
+}catch(e){
+console.log(e);
+}
+}
+
+load();
+setInterval(load,2000);
+
+</script>
+
+</body>
+</html>
