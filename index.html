@@ -161,6 +161,9 @@ Connecting...
 const HISTORY_API = "https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json";
 const ISSUE_API = "https://pakclub10.com/webapi/kv/issue/WinGo_30S";
 
+// CORS FIX PROXY
+const PROXY = "https://api.allorigins.win/raw?url=";
+
 function convertBigSmall(number){
     return number >= 5 ? 'BIG' : 'SMALL';
 }
@@ -203,11 +206,10 @@ function predict(history){
 
 async function fetchJSON(url){
 
-    const response = await fetch(url, {
-        method:'GET',
-        headers:{
-            'Accept':'application/json'
-        }
+    const finalURL = PROXY + encodeURIComponent(url);
+
+    const response = await fetch(finalURL, {
+        method:'GET'
     });
 
     return await response.json();
