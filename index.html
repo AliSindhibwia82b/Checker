@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WINGO SIGNAL PANEL</title>
+<title>REAL WINGO LIVE PANEL</title>
 
 <style>
 
@@ -35,9 +35,9 @@ font-weight:bold;
 
 .live{
 text-align:center;
-font-size:24px;
+font-size:22px;
 color:#00ff66;
-margin:15px 0;
+margin:10px 0;
 }
 
 .row{
@@ -67,34 +67,9 @@ font-size:70px;
 font-weight:bold;
 }
 
-.counter{
-font-size:30px;
+.number{
+font-size:35px;
 margin-top:10px;
-font-weight:bold;
-}
-
-.buttons{
-display:flex;
-gap:15px;
-margin-top:20px;
-}
-
-.btn{
-flex:1;
-padding:18px;
-border:none;
-border-radius:15px;
-font-size:24px;
-font-weight:bold;
-color:white;
-}
-
-.bigBtn{
-background:#16a34a;
-}
-
-.smallBtn{
-background:#dc2626;
 }
 
 .history{
@@ -105,13 +80,13 @@ margin-top:20px;
 }
 
 .item{
-width:50px;
-height:50px;
+width:55px;
+height:55px;
 border-radius:50%;
 display:flex;
 align-items:center;
 justify-content:center;
-font-size:22px;
+font-size:24px;
 font-weight:bold;
 }
 
@@ -130,52 +105,6 @@ font-size:18px;
 color:#94a3b8;
 }
 
-.startBtn{
-width:100%;
-padding:18px;
-font-size:24px;
-font-weight:bold;
-border:none;
-border-radius:15px;
-background:#00ff66;
-color:black;
-margin-top:15px;
-}
-
-#popup{
-display:none;
-position:fixed;
-top:120px;
-left:20px;
-background:#1c2942;
-padding:20px;
-border-radius:20px;
-width:220px;
-z-index:9999;
-cursor:move;
-box-shadow:0 0 20px rgba(0,0,0,0.5);
-}
-
-.popupTitle{
-text-align:center;
-font-size:22px;
-font-weight:bold;
-}
-
-.popupSignal{
-text-align:center;
-font-size:55px;
-font-weight:bold;
-margin-top:10px;
-}
-
-.popupCounter{
-text-align:center;
-font-size:28px;
-margin-top:10px;
-font-weight:bold;
-}
-
 </style>
 </head>
 
@@ -184,225 +113,99 @@ font-weight:bold;
 <div class="card">
 
 <div class="title">
-🔥 WINGO SIGNAL
+🔥 REAL WINGO LIVE
 </div>
 
 <div class="live">
-● LIVE
+● LIVE SIGNAL
 </div>
 
 <div class="row">
-<span>Current Signal:</span>
-<span id="predict">BIG</span>
+<span>Issue:</span>
+<span id="issue">...</span>
 </div>
 
 <div class="row">
-<span>Counter:</span>
-<span id="counterText">BIG 1</span>
+<span>Countdown:</span>
+<span id="countdown">0</span>
+</div>
+
+<div class="row">
+<span>Number:</span>
+<span id="number">0</span>
 </div>
 
 <div id="signalBox" class="signal big">
 
 <div>
-NEXT SIGNAL
+LIVE RESULT
 </div>
 
-<div class="signalText" id="mainSignal">
+<div class="signalText" id="signal">
 BIG
 </div>
 
+<div class="number" id="signalNumber">
+5
 </div>
-
-<!-- BUTTONS -->
-
-<div class="buttons">
-
-<button class="btn bigBtn"
-onclick="enterResult('BIG')">
-BIG
-</button>
-
-<button class="btn smallBtn"
-onclick="enterResult('SMALL')">
-SMALL
-</button>
 
 </div>
 
-<button class="startBtn"
-id="startBtn">
-START POPUP
-</button>
-
 </div>
-
-<!-- HISTORY -->
 
 <div class="card">
 
-<h2>History</h2>
+<h2>Live History</h2>
 
-<div class="history"
-id="history">
+<div class="history" id="history">
 </div>
 
 </div>
 
-<div class="status"
-id="status">
-READY
-</div>
-
-<!-- POPUP -->
-
-<div id="popup">
-
-<div class="popupTitle">
-🔥 LIVE SIGNAL
-</div>
-
-<div class="popupSignal"
-id="popupSignal">
-BIG
-</div>
-
-<div class="popupCounter"
-id="popupCounter">
-BIG 1
-</div>
-
+<div class="status" id="status">
+CONNECTING...
 </div>
 
 <script>
 
-// ===== DATA =====
+// ===== API =====
 
-let historyData = [];
+const ISSUE_API =
+'https://pakclub10.com/webapi/kv/issue/WinGo_30S';
 
-let currentSignal = 'BIG';
+const HISTORY_API =
+'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json';
 
-let signalCount = 1;
+// ===== LAST ISSUE =====
 
-// ===== HISTORY =====
+let lastIssue = '';
 
-function addHistory(result){
+// ===== BIG SMALL =====
 
-historyData.unshift(result);
+function getBigSmall(number){
 
-if(historyData.length > 10){
-historyData.pop();
-}
+number = parseInt(number);
 
-const history =
-document.getElementById('history');
-
-history.innerHTML = '';
-
-historyData.forEach(x=>{
-
-const div =
-document.createElement('div');
-
-div.classList.add('item');
-
-if(x === 'BIG'){
-
-div.classList.add('green');
-div.innerText = 'B';
-
-}else{
-
-div.classList.add('red');
-div.innerText = 'S';
-
-}
-
-history.appendChild(div);
-
-});
-
-}
-
-// ===== PREDICTION =====
-
-function getNextSignal(){
-
-const last3 =
-historyData.slice(0,3);
-
-const big =
-last3.filter(x=>x==='BIG').length;
-
-const small =
-last3.filter(x=>x==='SMALL').length;
-
-// BBB -> SMALL
-
-if(big >= 2){
-return 'SMALL';
-}
-
-// SSS -> BIG
-
-if(small >= 2){
+if(number >= 5){
 return 'BIG';
 }
 
-// ALTERNATE
-
-if(historyData[0] === 'BIG'){
 return 'SMALL';
-}
-
-return 'BIG';
 
 }
 
-// ===== UPDATE SIGNAL =====
+// ===== UPDATE UI =====
 
-function updateSignal(nextSignal){
+function updateUI(number, signal){
 
-// SAME SIGNAL
+document.getElementById('number')
+.innerText = number;
 
-if(nextSignal === currentSignal){
+document.getElementById('signal')
+.innerText = signal;
 
-signalCount++;
-
-if(signalCount > 5){
-signalCount = 1;
-}
-
-}else{
-
-currentSignal = nextSignal;
-
-signalCount = 1;
-
-}
-
-// TEXT
-
-const counter =
-nextSignal + ' ' + signalCount;
-
-// MAIN
-
-document.getElementById('predict')
-.innerText = nextSignal;
-
-document.getElementById('mainSignal')
-.innerText = nextSignal;
-
-document.getElementById('counterText')
-.innerText = counter;
-
-// POPUP
-
-document.getElementById('popupSignal')
-.innerText = nextSignal;
-
-document.getElementById('popupCounter')
-.innerText = counter;
+document.getElementById('signalNumber')
+.innerText = number;
 
 // COLOR
 
@@ -411,7 +214,7 @@ document.getElementById('signalBox');
 
 signalBox.className = 'signal';
 
-if(nextSignal === 'BIG'){
+if(signal === 'BIG'){
 
 signalBox.classList.add('big');
 
@@ -423,97 +226,135 @@ signalBox.classList.add('small');
 
 }
 
-// ===== BUTTON CLICK =====
+// ===== HISTORY =====
 
-function enterResult(result){
+function updateHistory(list){
 
-// SAVE REAL RESULT
+const history =
+document.getElementById('history');
 
-addHistory(result);
+history.innerHTML = '';
 
-// GET NEXT SIGNAL
+list.forEach(item=>{
 
-const nextSignal =
-getNextSignal();
+const number =
+parseInt(item.number);
 
-// UPDATE
+const signal =
+getBigSmall(number);
 
-updateSignal(nextSignal);
+const div =
+document.createElement('div');
+
+div.classList.add('item');
+
+if(signal === 'BIG'){
+
+div.classList.add('green');
+
+}else{
+
+div.classList.add('red');
+
+}
+
+div.innerText = number;
+
+history.appendChild(div);
+
+});
+
+}
+
+// ===== LOAD =====
+
+async function loadData(){
+
+try{
+
+// ISSUE API
+
+const issueRes =
+await fetch(ISSUE_API);
+
+const issueData =
+await issueRes.json();
+
+const issue =
+issueData.data.issueNumber;
+
+const countdown =
+issueData.data.countdown;
+
+// UPDATE ISSUE
+
+document.getElementById('issue')
+.innerText = issue;
+
+document.getElementById('countdown')
+.innerText = countdown + 's';
+
+// NEW ISSUE
+
+if(issue !== lastIssue){
+
+lastIssue = issue;
+
+// HISTORY API
+
+const historyRes =
+await fetch(HISTORY_API);
+
+const historyData =
+await historyRes.json();
+
+const list =
+historyData.data.list;
+
+// LATEST
+
+const latest =
+list[0];
+
+const number =
+latest.number;
+
+const signal =
+getBigSmall(number);
+
+// UPDATE UI
+
+updateUI(number, signal);
+
+// UPDATE HISTORY
+
+updateHistory(list);
 
 // STATUS
 
 document.getElementById('status')
 .innerText =
-'LAST RESULT: ' + result;
+'LIVE CONNECTED';
 
 }
 
-// ===== POPUP =====
+}catch(e){
 
-document.getElementById('startBtn')
-.onclick = ()=>{
+console.log(e);
 
-const popup =
-document.getElementById('popup');
-
-if(popup.style.display === 'none'){
-
-popup.style.display = 'block';
-
-}else{
-
-popup.style.display = 'none';
+document.getElementById('status')
+.innerText =
+'SERVER ERROR';
 
 }
 
-};
-
-// ===== DRAG =====
-
-const popup =
-document.getElementById('popup');
-
-let isDragging = false;
-
-let offsetX, offsetY;
-
-popup.addEventListener('touchstart',(e)=>{
-
-isDragging = true;
-
-offsetX =
-e.touches[0].clientX -
-popup.offsetLeft;
-
-offsetY =
-e.touches[0].clientY -
-popup.offsetTop;
-
-});
-
-document.addEventListener('touchmove',(e)=>{
-
-if(!isDragging) return;
-
-popup.style.left =
-(e.touches[0].clientX - offsetX)
-+ 'px';
-
-popup.style.top =
-(e.touches[0].clientY - offsetY)
-+ 'px';
-
-});
-
-document.addEventListener('touchend',()=>{
-
-isDragging = false;
-
-});
+}
 
 // ===== START =====
 
-updateSignal('BIG');
+loadData();
+
+setInterval(loadData,2000);
 
 </script>
 
