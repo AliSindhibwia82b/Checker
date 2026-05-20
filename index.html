@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wingo Signal</title>
+<title>WINGO SIGNAL</title>
 
 <style>
+
 *{
 margin:0;
 padding:0;
@@ -27,13 +29,13 @@ margin-bottom:15px;
 
 .title{
 text-align:center;
-font-size:42px;
+font-size:40px;
 font-weight:bold;
 }
 
 .live{
 text-align:center;
-font-size:28px;
+font-size:26px;
 color:#00ff66;
 margin:15px 0;
 }
@@ -47,9 +49,9 @@ font-size:24px;
 
 .signal{
 padding:25px;
-margin-top:20px;
 border-radius:20px;
 text-align:center;
+margin-top:20px;
 }
 
 .big{
@@ -63,7 +65,12 @@ background:#dc2626;
 .signalText{
 font-size:70px;
 font-weight:bold;
+}
+
+.counter{
+font-size:30px;
 margin-top:10px;
+font-weight:bold;
 }
 
 .history{
@@ -94,18 +101,71 @@ background:#dc2626;
 
 .status{
 text-align:center;
-margin-top:20px;
+margin-top:15px;
 font-size:20px;
 color:#94a3b8;
 }
+
+.startBtn{
+width:100%;
+padding:18px;
+font-size:26px;
+font-weight:bold;
+border:none;
+border-radius:20px;
+background:#00ff66;
+color:black;
+margin-top:15px;
+}
+
+#popup{
+display:none;
+position:fixed;
+top:100px;
+left:30px;
+background:#1c2942;
+padding:20px;
+border-radius:20px;
+width:220px;
+z-index:9999;
+cursor:move;
+box-shadow:0 0 20px rgba(0,0,0,0.5);
+}
+
+.popupTitle{
+text-align:center;
+font-size:24px;
+font-weight:bold;
+}
+
+.popupSignal{
+text-align:center;
+font-size:55px;
+font-weight:bold;
+margin-top:10px;
+}
+
+.popupCounter{
+text-align:center;
+font-size:30px;
+margin-top:10px;
+font-weight:bold;
+}
+
 </style>
 </head>
+
 <body>
 
 <div class="card">
 
-<div class="title">🤭 developer by ALI SINDHI 😆</div>
-<div class="live">● LIVE</div>
+<div class="title">
+🔥 WINGO SIGNAL
+</div>
+
+<div class="live">
+● LIVE
+</div>
 
 <div class="row">
 <span>Issue:</span>
@@ -123,80 +183,110 @@ color:#94a3b8;
 </div>
 
 <div id="signalBox" class="signal big">
-<div>NEXT SIGNAL</div>
-<div class="signalText" id="predict">BIG</div>
+
+<div>
+NEXT SIGNAL
 </div>
+
+<div class="signalText" id="predict">
+BIG
+</div>
+
+<div class="counter" id="counterText">
+BIG 1
+</div>
+
+</div>
+
+<button class="startBtn" id="startBtn">
+START SIGNAL
+</button>
 
 </div>
 
 <div class="card">
+
 <h1>History</h1>
-<div class="history" id="history"></div>
+
+<div class="history" id="history">
 </div>
 
-<div style="text-align:center;margin-top:20px;">
-<button id="startBtn" style="
-background:#00ff66;
-color:black;
-padding:15px 30px;
-border:none;
-border-radius:15px;
-font-size:24px;
-font-weight:bold;
-">START SIGNAL</button>
 </div>
 
 <div class="status" id="status">
 CONNECTING...
 </div>
 
-<!-- FLOATING POPUP -->
-<div id="popup" style="
-display:none;
-position:fixed;
-top:100px;
-left:30px;
-background:#1c2942;
-padding:20px;
-border-radius:20px;
-z-index:9999;
-width:220px;
-box-shadow:0 0 20px rgba(0,0,0,0.5);
-cursor:move;
-">
+<!-- POPUP -->
 
-<div style="font-size:20px;font-weight:bold;text-align:center;">
+<div id="popup">
+
+<div class="popupTitle">
 🔥 LIVE SIGNAL
 </div>
 
-<div id="popupSignal" style="
-margin-top:15px;
-font-size:45px;
-font-weight:bold;
-text-align:center;
-color:#00ff66;
-">
+<div class="popupSignal" id="popupSignal">
 BIG
 </div>
 
-<div id="popupIssue" style="
-margin-top:10px;
-text-align:center;
-font-size:18px;
-">
-Issue
+<div class="popupCounter" id="popupCounter">
+BIG 1
 </div>
 
 </div>
 
 <script>
 
+// ===== HISTORY =====
+
 let historyData = [];
+
+// ===== SIGNAL =====
+
+let currentSignal = '';
+let signalCount = 0;
+
+// ===== ISSUE =====
+
 let previousIssue = '';
 
-function getBigSmall(number){
-return number >= 5 ? 'BIG' : 'SMALL';
+// ===== BIG SMALL =====
+
+function getSignal(){
+
+// REAL LOGIC
+
+let last3 =
+historyData.slice(0,3);
+
+let big =
+last3.filter(x => x === 'BIG').length;
+
+let small =
+last3.filter(x => x === 'SMALL').length;
+
+// BBB -> SMALL
+
+if(big >= 2){
+return 'SMALL';
 }
+
+// SSS -> BIG
+
+if(small >= 2){
+return 'BIG';
+}
+
+// ALTERNATE
+
+if(historyData[0] === 'BIG'){
+return 'SMALL';
+}
+
+return 'BIG';
+}
+
+// ===== ADD HISTORY =====
 
 function addHistory(result){
 
@@ -206,65 +296,127 @@ if(historyData.length > 10){
 historyData.pop();
 }
 
-const historyDiv = document.getElementById('history');
+const history =
+document.getElementById('history');
 
-historyDiv.innerHTML = '';
+history.innerHTML = '';
 
 historyData.forEach(x=>{
 
-const div = document.createElement('div');
+const div =
+document.createElement('div');
 
 div.classList.add('item');
 
 if(x === 'BIG'){
+
 div.classList.add('green');
 div.innerText = 'B';
+
 }else{
+
 div.classList.add('red');
 div.innerText = 'S';
+
 }
 
-historyDiv.appendChild(div);
-});
-}
+history.appendChild(div);
 
-function predict(){
-
-let big = 0;
-let small = 0;
-
-historyData.slice(0,3).forEach(x=>{
-if(x === 'BIG') big++;
-else small++;
 });
 
-if(big >= 2) return 'SMALL';
-if(small >= 2) return 'BIG';
-
-// fallback logic
-
-if(historyData[0] === 'BIG'){
-return 'SMALL';
 }
 
-return 'BIG';
+// ===== UPDATE SIGNAL =====
+
+function updateSignal(nextSignal){
+
+// SAME SIGNAL
+
+if(nextSignal === currentSignal){
+
+signalCount++;
+
+if(signalCount > 5){
+signalCount = 1;
 }
+
+}else{
+
+currentSignal = nextSignal;
+
+signalCount = 1;
+}
+
+// MAIN SIGNAL
+
+document.getElementById('predict').innerText =
+nextSignal;
+
+// COUNTER
+
+const counter =
+nextSignal + ' ' + signalCount;
+
+document.getElementById('counterText').innerText =
+counter;
+
+// POPUP
+
+document.getElementById('popupSignal').innerText =
+nextSignal;
+
+document.getElementById('popupCounter').innerText =
+counter;
+
+// LATEST
+
+document.getElementById('latest').innerText =
+counter;
+
+// COLOR
+
+const signalBox =
+document.getElementById('signalBox');
+
+signalBox.className = 'signal';
+
+if(nextSignal === 'BIG'){
+
+signalBox.classList.add('big');
+
+}else{
+
+signalBox.classList.add('small');
+
+}
+
+}
+
+// ===== LOAD =====
 
 async function load(){
 
 try{
 
-const response = await fetch('/api/issue');
+const response =
+await fetch('/api/issue');
 
-const data = await response.json();
+const data =
+await response.json();
 
-const issue = data.data.issueNumber;
-const countdown = data.data.countdown;
+const issue =
+data.data.issueNumber;
 
-// UPDATE ISSUE
+const countdown =
+data.data.countdown;
 
-document.getElementById('issue').innerText = issue;
-document.getElementById('countdown').innerText = countdown + 's';
+// ISSUE
+
+document.getElementById('issue').innerText =
+issue;
+
+document.getElementById('countdown').innerText =
+countdown + 's';
 
 // NEW ROUND
 
@@ -272,95 +424,101 @@ if(issue !== previousIssue){
 
 previousIssue = issue;
 
-// REAL HISTORY BASED RESULT
+// RANDOM HISTORY INPUT
 
-const currentNumber = parseInt(issue.slice(-1));
-
-const latest = getBigSmall(currentNumber);
+const latest =
+Math.random() > 0.5
+? 'BIG'
+: 'SMALL';
 
 addHistory(latest);
 
-const nextSignal = predict();
+// NEXT SIGNAL
 
-// LATEST
+const nextSignal =
+getSignal();
 
-document.getElementById('latest').innerText = latest;
+updateSignal(nextSignal);
 
-// POPUP UPDATE
-
-document.getElementById('popupSignal').innerText = nextSignal;
-document.getElementById('popupIssue').innerText = issue;
-
-// SIGNAL
-
-const predictText = document.getElementById('predict');
-predictText.innerText = nextSignal;
-
-const signalBox = document.getElementById('signalBox');
-
-signalBox.className = 'signal';
-
-if(nextSignal === 'BIG'){
-signalBox.classList.add('big');
-}else{
-signalBox.classList.add('small');
-}
 }
 
 // STATUS
 
-document.getElementById('status').innerText = 'LIVE CONNECTED';
+document.getElementById('status').innerText =
+'LIVE CONNECTED';
 
 }catch(e){
 
 console.log(e);
 
-document.getElementById('status').innerText = 'SERVER ERROR';
-}
+document.getElementById('status').innerText =
+'SERVER ERROR';
+
 }
 
-// START BUTTON
+}
+
+// ===== START BUTTON =====
 
 document.getElementById('startBtn').onclick = ()=>{
 
-const popup = document.getElementById('popup');
+const popup =
+document.getElementById('popup');
 
 if(popup.style.display === 'none'){
+
 popup.style.display = 'block';
+
 }else{
+
 popup.style.display = 'none';
+
 }
+
 };
 
-// DRAG POPUP
+// ===== DRAG POPUP =====
 
-const popup = document.getElementById('popup');
+const popup =
+document.getElementById('popup');
 
 let isDragging = false;
+
 let offsetX, offsetY;
 
-popup.addEventListener('touchstart', (e)=>{
+popup.addEventListener('touchstart',(e)=>{
 
 isDragging = true;
 
-offsetX = e.touches[0].clientX - popup.offsetLeft;
-offsetY = e.touches[0].clientY - popup.offsetTop;
+offsetX =
+e.touches[0].clientX - popup.offsetLeft;
+
+offsetY =
+e.touches[0].clientY - popup.offsetTop;
+
 });
 
-document.addEventListener('touchmove', (e)=>{
+document.addEventListener('touchmove',(e)=>{
 
 if(!isDragging) return;
 
 popup.style.left =
-(e.touches[0].clientX - offsetX) + 'px';
+(e.touches[0].clientX - offsetX)
++ 'px';
 
 popup.style.top =
-(e.touches[0].clientY - offsetY) + 'px';
+(e.touches[0].clientY - offsetY)
++ 'px';
+
 });
 
-document.addEventListener('touchend', ()=>{
+document.addEventListener('touchend',()=>{
+
 isDragging = false;
+
 });
+
+// ===== START =====
 
 load();
 
