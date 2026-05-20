@@ -5,21 +5,26 @@ export default async function handler(req, res) {
     const response = await fetch(
       'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json',
       {
+        method: 'GET',
         headers: {
           'User-Agent': 'Mozilla/5.0',
-          'Accept': 'application/json'
+          'Accept': 'application/json,text/plain,*/*',
+          'Origin': 'https://pakclub10.com',
+          'Referer': 'https://pakclub10.com/'
         }
       }
     );
 
-    const data = await response.json();
+    const text = await response.text();
 
-    res.status(200).json(data);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.status(200).send(text);
 
-  } catch (error) {
+  } catch (e) {
 
     res.status(500).json({
-      error: error.toString()
+      error: e.toString()
     });
+
   }
 }
