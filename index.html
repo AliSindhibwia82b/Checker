@@ -174,7 +174,7 @@ const ISSUE_API =
 '/api/issue';
 
 const HISTORY_API =
-'/api/history';
+'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json';
 
 // ===== LAST ISSUE =====
 
@@ -303,7 +303,9 @@ lastIssue = issue;
 // HISTORY API
 
 const historyRes =
-await fetch(HISTORY_API);
+await fetch(HISTORY_API,{
+mode:'cors'
+});
 
 const historyData =
 await historyRes.json();
