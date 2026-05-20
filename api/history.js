@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
 
 const response = await fetch(
-'https://pakclub10.com/webapi/kv/issue/WinGo_30S'
+'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json'
 );
 
 const data = await response.json();
