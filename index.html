@@ -104,7 +104,7 @@ color:#94a3b8;
 
 <div class="card">
 
-<div class="title">🔥 developer by ALI SINDHI 😈SIGNAL</div>
+<div class="title">🤭 developer by ALI SINDHI 😆</div>
 <div class="live">● LIVE</div>
 
 <div class="row">
@@ -134,8 +134,59 @@ color:#94a3b8;
 <div class="history" id="history"></div>
 </div>
 
+<div style="text-align:center;margin-top:20px;">
+<button id="startBtn" style="
+background:#00ff66;
+color:black;
+padding:15px 30px;
+border:none;
+border-radius:15px;
+font-size:24px;
+font-weight:bold;
+">START SIGNAL</button>
+</div>
+
 <div class="status" id="status">
 CONNECTING...
+</div>
+
+<!-- FLOATING POPUP -->
+<div id="popup" style="
+display:none;
+position:fixed;
+top:100px;
+left:30px;
+background:#1c2942;
+padding:20px;
+border-radius:20px;
+z-index:9999;
+width:220px;
+box-shadow:0 0 20px rgba(0,0,0,0.5);
+cursor:move;
+">
+
+<div style="font-size:20px;font-weight:bold;text-align:center;">
+🔥 LIVE SIGNAL
+</div>
+
+<div id="popupSignal" style="
+margin-top:15px;
+font-size:45px;
+font-weight:bold;
+text-align:center;
+color:#00ff66;
+">
+BIG
+</div>
+
+<div id="popupIssue" style="
+margin-top:10px;
+text-align:center;
+font-size:18px;
+">
+Issue
+</div>
+
 </div>
 
 <script>
@@ -143,8 +194,8 @@ CONNECTING...
 let historyData = [];
 let previousIssue = '';
 
-function randomResult(){
-return Math.random() > 0.5 ? 'BIG' : 'SMALL';
+function getBigSmall(number){
+return number >= 5 ? 'BIG' : 'SMALL';
 }
 
 function addHistory(result){
@@ -190,7 +241,13 @@ else small++;
 if(big >= 2) return 'SMALL';
 if(small >= 2) return 'BIG';
 
-return randomResult();
+// fallback logic
+
+if(historyData[0] === 'BIG'){
+return 'SMALL';
+}
+
+return 'BIG';
 }
 
 async function load(){
@@ -215,7 +272,11 @@ if(issue !== previousIssue){
 
 previousIssue = issue;
 
-const latest = randomResult();
+// REAL HISTORY BASED RESULT
+
+const currentNumber = parseInt(issue.slice(-1));
+
+const latest = getBigSmall(currentNumber);
 
 addHistory(latest);
 
@@ -224,6 +285,11 @@ const nextSignal = predict();
 // LATEST
 
 document.getElementById('latest').innerText = latest;
+
+// POPUP UPDATE
+
+document.getElementById('popupSignal').innerText = nextSignal;
+document.getElementById('popupIssue').innerText = issue;
 
 // SIGNAL
 
@@ -252,6 +318,49 @@ console.log(e);
 document.getElementById('status').innerText = 'SERVER ERROR';
 }
 }
+
+// START BUTTON
+
+document.getElementById('startBtn').onclick = ()=>{
+
+const popup = document.getElementById('popup');
+
+if(popup.style.display === 'none'){
+popup.style.display = 'block';
+}else{
+popup.style.display = 'none';
+}
+};
+
+// DRAG POPUP
+
+const popup = document.getElementById('popup');
+
+let isDragging = false;
+let offsetX, offsetY;
+
+popup.addEventListener('touchstart', (e)=>{
+
+isDragging = true;
+
+offsetX = e.touches[0].clientX - popup.offsetLeft;
+offsetY = e.touches[0].clientY - popup.offsetTop;
+});
+
+document.addEventListener('touchmove', (e)=>{
+
+if(!isDragging) return;
+
+popup.style.left =
+(e.touches[0].clientX - offsetX) + 'px';
+
+popup.style.top =
+(e.touches[0].clientY - offsetY) + 'px';
+});
+
+document.addEventListener('touchend', ()=>{
+isDragging = false;
+});
 
 load();
 
