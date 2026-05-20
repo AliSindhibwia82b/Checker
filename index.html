@@ -1,148 +1,116 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>WinGo Signal Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wingo Signal</title>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
-
 body{
-    background:#08122f;
-    color:white;
-    padding:15px;
+background:#08122f;
+color:white;
+font-family:Arial;
+padding:15px;
 }
 
 .card{
-    background:#1d2942;
-    border-radius:20px;
-    padding:20px;
-    margin-bottom:15px;
+background:#1c2942;
+padding:20px;
+border-radius:20px;
+margin-bottom:15px;
 }
 
 .title{
-    text-align:center;
-    font-size:30px;
-    font-weight:bold;
-    margin-bottom:15px;
+text-align:center;
+font-size:40px;
+font-weight:bold;
 }
 
 .live{
-    text-align:center;
-    color:#00ff66;
-    margin-bottom:20px;
-    font-size:24px;
-    font-weight:bold;
+text-align:center;
+color:#00ff66;
+font-size:30px;
+margin:20px 0;
 }
 
 .row{
-    display:flex;
-    justify-content:space-between;
-    margin:12px 0;
-    font-size:22px;
+display:flex;
+justify-content:space-between;
+font-size:26px;
+margin:12px 0;
 }
 
 .signal{
-    margin-top:20px;
-    border-radius:20px;
-    padding:25px;
-    text-align:center;
+padding:25px;
+border-radius:20px;
+text-align:center;
+margin-top:20px;
 }
 
 .big{
-    background:#16a34a;
+background:#16a34a;
 }
 
 .small{
-    background:#dc2626;
+background:#dc2626;
 }
 
-.signal-title{
-    font-size:24px;
-}
-
-.signal-text{
-    font-size:60px;
-    font-weight:bold;
-    margin-top:10px;
-}
-
-.confidence{
-    font-size:28px;
-    margin-top:10px;
+.signalText{
+font-size:70px;
+font-weight:bold;
 }
 
 .history{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:15px;
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-top:20px;
 }
 
-.history-item{
-    width:50px;
-    height:50px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:22px;
-    font-weight:bold;
+.item{
+width:55px;
+height:55px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:24px;
+font-weight:bold;
 }
 
-.history-big{
-    background:#16a34a;
+.green{
+background:#16a34a;
 }
 
-.history-small{
-    background:#dc2626;
-}
-
-.status{
-    text-align:center;
-    margin-top:15px;
-    color:#94a3b8;
+.red{
+background:#dc2626;
 }
 </style>
 </head>
-
 <body>
 
 <div class="card">
 
-<div class="title">🔥 WINGO SIGNAL PANEL</div>
+<div class="title">🔥 WINGO SIGNAL</div>
 <div class="live">● LIVE</div>
 
 <div class="row">
 <span>Issue:</span>
-<span id="issue">Loading...</span>
+<span id="issue">...</span>
 </div>
 
 <div class="row">
 <span>Countdown:</span>
-<span id="countdown">0s</span>
+<span id="countdown">0</span>
 </div>
 
 <div class="row">
-<span>Latest Number:</span>
-<span id="latestNumber">-</span>
+<span>Latest:</span>
+<span id="latest">-</span>
 </div>
 
-<div class="row">
-<span>Latest Result:</span>
-<span id="latestResult">-</span>
-</div>
-
-<div id="signalBox" class="signal big">
-<div class="signal-title">NEXT SIGNAL</div>
-<div class="signal-text" id="prediction">BIG</div>
-<div class="confidence" id="confidence">78%</div>
+<div id="signal" class="signal big">
+<div>NEXT SIGNAL</div>
+<div class="signalText" id="predict">BIG</div>
 </div>
 
 </div>
@@ -152,157 +120,103 @@ body{
 <div class="history" id="history"></div>
 </div>
 
-<div class="status" id="status">
-Connecting...
-</div>
-
 <script>
 
-const HISTORY_API = "https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json";
-const ISSUE_API = "https://pakclub10.com/webapi/kv/issue/WinGo_30S";
-
-// CORS FIX PROXY
-const PROXY = "https://api.allorigins.win/raw?url=";
-
-function convertBigSmall(number){
-    return number >= 5 ? 'BIG' : 'SMALL';
+function bs(num){
+return num >= 5 ? 'BIG' : 'SMALL';
 }
 
-function setStatus(text){
-    document.getElementById('status').innerText = text;
+function predict(arr){
+
+let big = 0;
+let small = 0;
+
+arr.slice(0,3).forEach(x=>{
+if(x==='BIG') big++;
+else small++;
+});
+
+if(big>=2) return 'SMALL';
+if(small>=2) return 'BIG';
+
+return Math.random()>0.5 ? 'BIG':'SMALL';
 }
 
-function predict(history){
+async function load(){
 
-    const last3 = history.slice(0,3);
+try{
 
-    let big = 0;
-    let small = 0;
+const issueRes = await fetch('/api/issue');
+const issueData = await issueRes.json();
 
-    last3.forEach(x=>{
-        if(x === 'BIG') big++;
-        else small++;
-    });
+const historyRes = await fetch('/api/history');
+const historyData = await historyRes.json();
 
-    if(big >= 2){
-        return {
-            signal:'SMALL',
-            confidence:'82%'
-        };
-    }
+const list = historyData.data.list;
 
-    if(small >= 2){
-        return {
-            signal:'BIG',
-            confidence:'82%'
-        };
-    }
+const latest = parseInt(list[0].number);
 
-    return {
-        signal:Math.random() > 0.5 ? 'BIG' : 'SMALL',
-        confidence:'70%'
-    };
+const latestBS = bs(latest);
+
+const history = [];
+
+list.forEach(x=>{
+history.push(bs(parseInt(x.number)));
+});
+
+const next = predict(history);
+
+// ISSUE
+
+document.getElementById('issue').innerText = issueData.data.issueNumber;
+
+document.getElementById('countdown').innerText = issueData.data.countdown + 's';
+
+document.getElementById('latest').innerText = latest + ' → ' + latestBS;
+
+// PREDICT
+
+document.getElementById('predict').innerText = next;
+
+const signal = document.getElementById('signal');
+
+signal.className = 'signal';
+
+if(next==='BIG'){
+signal.classList.add('big');
+}else{
+signal.classList.add('small');
 }
 
-async function fetchJSON(url){
+// HISTORY
 
-    const finalURL = PROXY + encodeURIComponent(url);
+const historyDiv = document.getElementById('history');
+historyDiv.innerHTML='';
 
-    const response = await fetch(finalURL, {
-        method:'GET'
-    });
+history.slice(0,10).forEach(x=>{
 
-    return await response.json();
+const div = document.createElement('div');
+
+div.classList.add('item');
+
+if(x==='BIG'){
+div.classList.add('green');
+div.innerText='B';
+}else{
+div.classList.add('red');
+div.innerText='S';
 }
 
-async function loadData(){
+historyDiv.appendChild(div);
+});
 
-    try{
-
-        setStatus('Fetching live data...');
-
-        // ISSUE
-        const issueData = await fetchJSON(ISSUE_API);
-
-        document.getElementById('issue').innerText = issueData.data.issueNumber;
-
-        document.getElementById('countdown').innerText = issueData.data.countdown + 's';
-
-        // HISTORY
-        const historyData = await fetchJSON(HISTORY_API);
-
-        const list = historyData.data.list;
-
-        const latest = list[0];
-
-        const latestNumber = parseInt(latest.number);
-
-        const latestResult = convertBigSmall(latestNumber);
-
-        document.getElementById('latestNumber').innerText = latestNumber;
-
-        document.getElementById('latestResult').innerText = latestResult;
-
-        // HISTORY UI
-        const historyDiv = document.getElementById('history');
-
-        historyDiv.innerHTML = '';
-
-        let convertedHistory = [];
-
-        list.slice(0,10).forEach(item=>{
-
-            const num = parseInt(item.number);
-
-            const result = convertBigSmall(num);
-
-            convertedHistory.push(result);
-
-            const div = document.createElement('div');
-
-            div.classList.add('history-item');
-
-            if(result === 'BIG'){
-                div.classList.add('history-big');
-                div.innerText = 'B';
-            }else{
-                div.classList.add('history-small');
-                div.innerText = 'S';
-            }
-
-            historyDiv.appendChild(div);
-        });
-
-        // PREDICTION
-        const prediction = predict(convertedHistory);
-
-        document.getElementById('prediction').innerText = prediction.signal;
-
-        document.getElementById('confidence').innerText = prediction.confidence;
-
-        const signalBox = document.getElementById('signalBox');
-
-        signalBox.className = 'signal';
-
-        if(prediction.signal === 'BIG'){
-            signalBox.classList.add('big');
-        }else{
-            signalBox.classList.add('small');
-        }
-
-        setStatus('LIVE CONNECTED');
-
-    }catch(error){
-
-        console.log(error);
-
-        setStatus('API BLOCKED OR CORS ERROR');
-    }
+}catch(e){
+console.log(e);
+}
 }
 
-loadData();
-
-setInterval(loadData,2000);
+load();
+setInterval(load,2000);
 
 </script>
 
